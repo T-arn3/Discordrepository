@@ -14,6 +14,7 @@ import os
 intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
+intents.voice_states = True
 
 bot = commands.Bot(command_prefix="あめちゃん", intents=intents)
 
@@ -131,6 +132,50 @@ async def ダイス振って(ctx, *, roll: str):
 
     await ctx.send(embed=embed)
 
+
+READ_CHANNEL_ID = 1296376638430249030
+
+@bot.event
+async def on_message(message):
+    if message.author.bot:
+        return
+
+    # 指定チャンネルだけ反応
+    if message.channel.id == READ_CHANNEL_ID:
+
+        if message.guild.voice_client is None:
+            return
+
+        voice_client = message.guild.voice_client
+
+        if voice_client.is_playing():
+            return  # 再生中なら無視（安全）
+
+        text = f"{message.author.display_name}さんが{message.content}だってさ"
+
+        tts = gTTS(text=text, lang="ja")
+        tts.save("read.mp3")
+
+        voice_client.play(discord.FFmpegPCMAudio("read.mp3"))
+
+    await bot.process_commands(message)
+
+
+
+@bot.command()
+async def きて(ctx):
+    if ctx.author.voice is None:
+        await ctx.send("先にVCに入ってね！")
+        return
+
+    channel = ctx.author.voice.channel
+
+    if ctx.voice_client is not None:
+        await ctx.voice_client.move_to(channel)
+    else:
+        await channel.connect()
+
+    await ctx.send("VCに入ったよ！")
 
 @bot.event
 async def on_member_join(member):
