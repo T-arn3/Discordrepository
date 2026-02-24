@@ -1,0 +1,142 @@
+import discord
+from discord.ext import commands
+
+import asyncio
+from datetime import datetime as dt
+
+import re
+import random
+import os
+
+intents = discord.Intents.default()
+intents.message_content = True
+intents.members = True
+
+bot = commands.Bot(command_prefix="あめちゃん", intents=intents)
+
+@bot.event
+async def on_ready():
+    print(f"ログイン中のアカウント：{bot.user}")
+
+class RecruitView(discord.ui.View):
+    def __init__(self, max_people):
+        super().__init__(timeout=None)
+        self.max_people = max_people
+        self.members = []
+
+    @discord.ui.button(label="参加する", style=discord.ButtonStyle.green)
+    async def join(self, interaction: discord.Interaction, button: discord.ui.Button):
+        user = interaction.user
+
+        if user in self.members:
+            self.members.remove(user)
+            await interaction.response.send_message("参加を取り消しました", ephemeral=True)
+        else:
+            if len(self.members) >= self.max_people:
+                await interaction.response.send_message("満員です！", ephemeral=True)
+                return
+            self.members.append(user)
+            await interaction.response.send_message("参加しました！", ephemeral=True)
+
+        embed = interaction.message.embeds[0]
+        embed.set_field_at(
+            1,
+            name="👥 参加者",
+            value="\n".join([m.mention for m in self.members]) or "まだいません",
+            inline=False
+        )
+
+        embed.set_field_at(
+            2,
+            name="📊 状況",
+            value=f"{len(self.members)}/{self.max_people}",
+            inline=False
+        )
+
+        if len(self.members) >= self.max_people:
+            embed.color = discord.Color.red()
+            embed.title = "🔒 募集終了（満員）"
+            for item in self.children:
+                item.disabled = True
+
+        await interaction.message.edit(embed=embed, view=self)
+
+
+@bot.command()
+async def 募集して(ctx, game: str, people: int):
+    embed = discord.Embed(
+        title="📢 ゲーム募集！",
+        color=discord.Color.green()
+    )
+
+    embed.add_field(name="🎮 ゲーム", value=game, inline=False)
+    embed.add_field(name="👥 参加者", value="まだいません", inline=False)
+    embed.add_field(name="📊 状況", value=f"0/{people}", inline=False)
+    embed.set_footer(text=f"募集者: {ctx.author.display_name}")
+
+    view = RecruitView(people)
+    await ctx.send(embed=embed, view=view)
+
+@bot.command()
+async def ダイス振って(ctx, *, roll: str):
+    pattern = r"(\d+)d(\d+)([+-]\d+)?"
+    match = re.fullmatch(pattern, roll)
+
+    if not match:
+        await ctx.send("形式は 2d6 や 1d20+3 みたいに書いてね！")
+        return
+
+    dice_count = int(match.group(1))
+    dice_sides = int(match.group(2))
+    modifier = int(match.group(3)) if match.group(3) else 0
+
+    if dice_count > 50:
+        await ctx.send("ダイス振りすぎ！50個まで！")
+        return
+
+    rolls = [random.randint(1, dice_sides) for _ in range(dice_count)]
+    total = sum(rolls) + modifier
+
+    # 理論上の最大・最小
+    max_total = dice_count * dice_sides + modifier
+    min_total = dice_count * 1 + modifier
+
+    roll_text = " + ".join(map(str, rolls))
+    if modifier:
+        roll_text += f" {'+' if modifier > 0 else ''}{modifier}"
+
+    title = f"🎲 {roll}"
+    color = discord.Color.purple()
+    extra_text = ""
+
+    if total == max_total:
+        title = "🎯 クリティカル！！！"
+        color = discord.Color.gold()
+        extra_text = "\n\n🔥 最大合計値！"
+    elif total == min_total:
+        title = "💀 ファンブル…"
+        color = discord.Color.red()
+        extra_text = "\n\n⚠ 最小合計値…"
+
+    embed = discord.Embed(
+        title=title,
+        description=f"内訳：{roll_text}\n\n🎉 合計：**{total}**{extra_text}",
+        color=color
+    )
+
+    await ctx.send(embed=embed)
+
+
+@bot.event
+async def on_member_join(member):
+    channel = bot.get_channel(1296118740592754711)
+    if channel:
+        embed = discord.Embed(
+            title="new",
+            description=f"{member.mention} ようこそあめのサーバーへ",
+            color=discord.Color.pink()
+        )
+        await channel.send(embed=embed)
+
+# bot.run("MTQ3NTY3NTQ0NTA5NjYxNTk1OA.GNLe5F.Y3KW5cjZz4VMstSgSa07C9vdzuEEz4HkqLqWXo")
+bot.run(os.getenv("TOKEN"))
