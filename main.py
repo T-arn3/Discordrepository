@@ -115,7 +115,7 @@ async def ダイス振って(ctx, *, roll: str):
     extra_text = ""
 
     if total == max_total:
-        title = "🎯 クリティカル！！！"
+        title = "🎯 クリティカル！！!!!！"
         color = discord.Color.gold()
         extra_text = "\n\n🔥 最大合計値！"
     elif total == min_total:
