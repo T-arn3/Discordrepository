@@ -4,6 +4,9 @@ from discord.ext import commands
 import asyncio
 from datetime import datetime as dt
 
+import threading
+from flask import Flask
+
 import re
 import random
 import os
@@ -13,6 +16,8 @@ intents.message_content = True
 intents.members = True
 
 bot = commands.Bot(command_prefix="あめちゃん", intents=intents)
+
+app = Flask(__name__)
 
 @bot.event
 async def on_ready():
@@ -137,6 +142,18 @@ async def on_member_join(member):
             color=discord.Color.pink()
         )
         await channel.send(embed=embed)
+
+@app.route("/")
+def home():
+    return "Bot is running!"
+
+def run_web():
+    app.run(host="0.0.0.0", port=10000)
+
+# Webサーバーを別スレッドで起動
+threading.Thread(target=run_web).start()
+
         
 bot.run(os.getenv("TOKEN"))
+
 
