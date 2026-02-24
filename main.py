@@ -159,7 +159,6 @@ async def on_message(message):
             vc.stop()
 
         text = rumor_format(message.author, message.content)
-        text = ame_character(text)  # ここで語尾調整
 
         tts = gTTS(text=text, lang="ja")
         tts.save("read.mp3")
