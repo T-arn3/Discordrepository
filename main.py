@@ -137,6 +137,6 @@ async def on_member_join(member):
             color=discord.Color.pink()
         )
         await channel.send(embed=embed)
-
-# bot.run("MTQ3NTY3NTQ0NTA5NjYxNTk1OA.GNLe5F.Y3KW5cjZz4VMstSgSa07C9vdzuEEz4HkqLqWXo")
+        
 bot.run(os.getenv("TOKEN"))
+
