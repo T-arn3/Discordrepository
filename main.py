@@ -12,7 +12,6 @@ from gtts import gTTS
 import re
 import random
 import os
-import subprocess
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -138,11 +137,6 @@ async def ダイス振って(ctx, *, roll: str):
 
 READ_CHANNEL_ID = 1296376638430249030
 
-intents = discord.Intents.default()
-intents.message_content = True
-intents.voice_states = True
-bot = commands.Bot(command_prefix="あめちゃん", intents=intents)
-
 def rumor_format(user, text):
     patterns = [
         f"{user.display_name}さんが{text}だってさ",
@@ -150,19 +144,6 @@ def rumor_format(user, text):
         f"{user.display_name}さん、{text}だって〜",
     ]
     return random.choice(patterns)
-
-def ame_character(text):
-    endings = ["だよ〜", "なのだよ！", "だぞっ！", "やよ〜！"]
-    return text + " " + random.choice(endings)
-
-def change_pitch(input_file, output_file, pitch=1.1):
-    subprocess.run([
-        "ffmpeg",
-        "-y",
-        "-i", input_file,
-        "-af", f"asetrate=44100*{pitch},aresample=44100,atempo={1/pitch}",
-        output_file
-    ])
 
 @bot.event
 async def on_message(message):
@@ -177,22 +158,16 @@ async def on_message(message):
         if vc.is_playing():
             vc.stop()
 
-        # ランダム発言＋語尾キャラ化
         text = rumor_format(message.author, message.content)
-        text = ame_character(text)
+        text = ame_character(text)  # ここで語尾調整
 
-        # gTTSで生成
         tts = gTTS(text=text, lang="ja")
         tts.save("read.mp3")
 
-        # ピッチ調整
-        pitch = random.uniform(1.0, 1.1)
-        change_pitch("read.mp3", "read_pitch.mp3", pitch)
-
-        # VCで再生
-        vc.play(discord.FFmpegPCMAudio("read_pitch.mp3"))
+        vc.play(discord.FFmpegPCMAudio("read.mp3"))
 
     await bot.process_commands(message)
+
 
 
 @bot.command()
