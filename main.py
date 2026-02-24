@@ -155,12 +155,12 @@ def ame_character(text):
     endings = ["だよ〜", "なのだよ！", "だぞっ！", "やよ〜！"]
     return text + " " + random.choice(endings)
 
-def change_pitch(input_file, output_file, pitch=1.2):
+def change_pitch(input_file, output_file, pitch=1.1):
     subprocess.run([
         "ffmpeg",
         "-y",
         "-i", input_file,
-        "-af", f"asetrate=44100*{pitch},aresample=44100",
+        "-af", f"asetrate=44100*{pitch},aresample=44100,atempo={1/pitch}",
         output_file
     ])
 
@@ -186,7 +186,7 @@ async def on_message(message):
         tts.save("read.mp3")
 
         # ピッチ調整
-        pitch = random.uniform(1.0, 1.3)
+        pitch = random.uniform(1.0, 1.1)
         change_pitch("read.mp3", "read_pitch.mp3", pitch)
 
         # VCで再生
