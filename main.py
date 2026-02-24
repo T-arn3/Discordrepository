@@ -7,6 +7,8 @@ from datetime import datetime as dt
 import threading
 from flask import Flask
 
+from gtts import gTTS
+
 import re
 import random
 import os
