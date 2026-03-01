@@ -135,54 +135,54 @@ async def ダイス振って(ctx, *, roll: str):
     await ctx.send(embed=embed)
 
 
-READ_CHANNEL_ID = 1296376638430249030
+# READ_CHANNEL_ID = 1296376638430249030
 
-def rumor_format(user, text):
-    patterns = [
-        f"{user.display_name}さんが{text}だってさ",
-        f"ねえねえ、{user.display_name}さんが{text}って！",
-        f"{user.display_name}さん、{text}だって〜",
-    ]
-    return random.choice(patterns)
+# def rumor_format(user, text):
+#     patterns = [
+#         f"{user.display_name}さんが{text}だってさ",
+#         f"ねえねえ、{user.display_name}さんが{text}って！",
+#         f"{user.display_name}さん、{text}だって〜",
+#     ]
+#     return random.choice(patterns)
 
-@bot.event
-async def on_message(message):
-    if message.author.bot:
-        return
+# @bot.event
+# async def on_message(message):
+#     if message.author.bot:
+#         return
 
-    if message.channel.id == READ_CHANNEL_ID:
-        if message.guild.voice_client is None:
-            return
+#     if message.channel.id == READ_CHANNEL_ID:
+#         if message.guild.voice_client is None:
+#             return
 
-        vc = message.guild.voice_client
-        if vc.is_playing():
-            vc.stop()
+#         vc = message.guild.voice_client
+#         if vc.is_playing():
+#             vc.stop()
 
-        text = rumor_format(message.author, message.content)
+#         text = rumor_format(message.author, message.content)
 
-        tts = gTTS(text=text, lang="ja")
-        tts.save("read.mp3")
+#         tts = gTTS(text=text, lang="ja")
+#         tts.save("read.mp3")
 
-        vc.play(discord.FFmpegPCMAudio("read.mp3"))
+#         vc.play(discord.FFmpegPCMAudio("read.mp3"))
 
-    await bot.process_commands(message)
+#     await bot.process_commands(message)
 
 
 
-@bot.command()
-async def きて(ctx):
-    if ctx.author.voice is None:
-        await ctx.send("先にVCに入ってね！")
-        return
+# @bot.command()
+# async def きて(ctx):
+#     if ctx.author.voice is None:
+#         await ctx.send("先にVCに入ってね！")
+#         return
 
-    channel = ctx.author.voice.channel
+#     channel = ctx.author.voice.channel
 
-    if ctx.voice_client is not None:
-        await ctx.voice_client.move_to(channel)
-    else:
-        await channel.connect()
+#     if ctx.voice_client is not None:
+#         await ctx.voice_client.move_to(channel)
+#     else:
+#         await channel.connect()
 
-    await ctx.send("VCに入ったよ！")
+#     await ctx.send("VCに入ったよ！")
 
 @bot.event
 async def on_member_join(member):
