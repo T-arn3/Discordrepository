@@ -206,6 +206,5 @@ def run_web():
 threading.Thread(target=run_web).start()
 
         
+print("TOKEN確認:", os.getenv("TOKEN"))
 bot.run(os.getenv("TOKEN"))
-
-
